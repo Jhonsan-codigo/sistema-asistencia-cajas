@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project-private xmlns="http://www.netbeans.org/ns/project-private/1">
+    <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
+    <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
+        <group>
+            <file>file:/C:/Users/USER/Videos/asistenciaaa/Asistencia-Web/web/dashboard.jsp</file>
+            <file>file:/C:/Users/USER/Videos/asistenciaaa/Asistencia-Web/web/alumnos.jsp</file>
+            <file>file:/C:/Users/USER/Videos/asistenciaaa/Asistencia-Web/web/asistencia.jsp</file>
+            <file>file:/C:/Users/USER/Videos/asistenciaaa/Asistencia-Web/web/carreras.jsp</file>
+            <file>file:/C:/Users/USER/Videos/asistenciaaa/Asistencia-Web/web/cursos.jsp</file>
+            <file>file:/C:/Users/USER/Videos/asistenciaaa/Asistencia-Web/web/docentes.jsp</file>
+            <file>file:/C:/Users/USER/Videos/asistenciaaa/Asistencia-Web/web/reportes.jsp</file>
+            <file>file:/C:/Users/USER/Videos/asistenciaaa/Asistencia-Web/src/java/config/DatabaseConfig.java</file>
+            <file>file:/C:/Users/USER/Videos/asistenciaaa/Asistencia-Web/src/java/controllers/AlumnoServlet.java</file>
+            <file>file:/C:/Users/USER/Videos/asistenciaaa/Asistencia-Web/src/java/controllers/AsistenciaServlet.java</file>
+            <file>file:/C:/Users/USER/Videos/asistenciaaa/Asistencia-Web/src/java/controllers/CarreraServlet.java</file>
+            <file>file:/C:/Users/USER/Videos/asistenciaaa/Asistencia-Web/src/java/controllers/CursoServlet.java</file>
+            <file>file:/C:/Users/USER/Videos/asistenciaaa/Asistencia-Web/src/java/controllers/DocenteServlet.java</file>
+            <file>file:/C:/Users/USER/Videos/asistenciaaa/Asistencia-Web/src/java/controllers/ReporteServlet.java</file>
+            <file>file:/C:/Users/USER/Videos/asistenciaaa/Asistencia-Web/src/java/dao/AlumnoDAO.java</file>
+            <file>file:/C:/Users/USER/Videos/asistenciaaa/Asistencia-Web/src/java/dao/AsistenciaDAO.java</file>
+            <file>file:/C:/Users/USER/Videos/asistenciaaa/Asistencia-Web/src/java/dao/CarreraDAO.java</file>
+            <file>file:/C:/Users/USER/Videos/asistenciaaa/Asistencia-Web/src/java/dao/CursoDAO.java</file>
+            <file>file:/C:/Users/USER/Videos/asistenciaaa/Asistencia-Web/src/java/dao/DocenteDAO.java</file>
+            <file>file:/C:/Users/USER/Videos/asistenciaaa/Asistencia-Web/src/java/database/Conexion.java</file>
+            <file>file:/C:/Users/USER/Videos/asistenciaaa/Asistencia-Web/src/java/database/DatabaseSetup.java</file>
+            <file>file:/C:/Users/USER/Videos/asistenciaaa/Asistencia-Web/src/java/modelos/Alumno.java</file>
+            <file>file:/C:/Users/USER/Videos/asistenciaaa/Asistencia-Web/src/java/modelos/Asistencia.java</file>
+            <file>file:/C:/Users/USER/Videos/asistenciaaa/Asistencia-Web/src/java/modelos/Carrera.java</file>
+            <file>file:/C:/Users/USER/Videos/asistenciaaa/Asistencia-Web/src/java/modelos/Curso.java</file>
+            <file>file:/C:/Users/USER/Videos/asistenciaaa/Asistencia-Web/src/java/modelos/Docente.java</file>
+            <file>file:/C:/Users/USER/Videos/asistenciaaa/Asistencia-Web/src/java/util/DateUtil.java</file>
+            <file>file:/C:/Users/USER/Videos/asistenciaaa/Asistencia-Web/web/css/instituto-theme.css</file>
+            <file>file:/C:/Users/USER/Videos/asistenciaaa/Asistencia-Web/web/js/instituto-effects.js</file>
+            <file>file:/C:/Users/USER/Videos/asistenciaaa/Asistencia-Web/web/WEB-INF/web.xml</file>
+            <file>file:/C:/Users/USER/Videos/asistenciaaa/Asistencia-Web/nbproject/build-impl.xml</file>
+            <file>file:/C:/Users/USER/Videos/asistenciaaa/Asistencia-Web/src/java/controllers/DashboardServlet.java</file>
+            <file>file:/C:/Users/USER/Videos/asistenciaaa/Asistencia-Web/web/js/json-pe-api.js</file>
+            <file>file:/C:/Users/USER/Videos/asistenciaaa/Asistencia-Web/web/index.jsp</file>
+            <file>file:/C:/Users/USER/Videos/asistenciaaa/Asistencia-Web/src/java/controllers/ConsultaDNIServlet.java</file>
+            <file>file:/C:/Users/USER/Videos/asistenciaaa/Asistencia-Web/web/login.jsp</file>
+            <file>file:/C:/Users/USER/Videos/asistenciaaa/Asistencia-Web/src/java/controllers/LoginServlet.java</file>
+            <file>file:/C:/Users/USER/Videos/asistenciaaa/Asistencia-Web/src/java/controllers/HttpServletRequest.java</file>
+            <file>file:/C:/Users/USER/Videos/asistenciaaa/Asistencia-Web/src/java/controllers/LogoutServlet.java</file>
+        </group>
+    </open-files>
+</project-private>

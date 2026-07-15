@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns="https://jakarta.ee/xml/ns/jakartaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_6_1.xsd"
+         version="6.1">
+
+    <!-- Página de bienvenida -->
+    <welcome-file-list>
+        <welcome-file>index.jsp</welcome-file>
+    </welcome-file-list>
+
+    <!-- ============ SERVLETS ============ -->
+
+    <!-- Dashboard -->
+    <servlet>
+        <servlet-name>DashboardServlet</servlet-name>
+        <servlet-class>controllers.DashboardServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>DashboardServlet</servlet-name>
+        <url-pattern>/dashboard</url-pattern>
+    </servlet-mapping>
+
+    <!-- Alumnos -->
+    <servlet>
+        <servlet-name>AlumnoServlet</servlet-name>
+        <servlet-class>controllers.AlumnoServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>AlumnoServlet</servlet-name>
+        <url-pattern>/alumnos</url-pattern>
+    </servlet-mapping>
+
+    <!-- Docentes -->
+    <servlet>
+        <servlet-name>DocenteServlet</servlet-name>
+        <servlet-class>controllers.DocenteServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>DocenteServlet</servlet-name>
+        <url-pattern>/docentes</url-pattern>
+    </servlet-mapping>
+
+    <!-- Cursos -->
+    <servlet>
+        <servlet-name>CursoServlet</servlet-name>
+        <servlet-class>controllers.CursoServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>CursoServlet</servlet-name>
+        <url-pattern>/cursos</url-pattern>
+    </servlet-mapping>
+
+    <!-- Carreras -->
+    <servlet>
+        <servlet-name>CarreraServlet</servlet-name>
+        <servlet-class>controllers.CarreraServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>CarreraServlet</servlet-name>
+        <url-pattern>/carreras</url-pattern>
+    </servlet-mapping>
+
+    <!-- Asistencia -->
+    <servlet>
+        <servlet-name>AsistenciaServlet</servlet-name>
+        <servlet-class>controllers.AsistenciaServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>AsistenciaServlet</servlet-name>
+        <url-pattern>/asistencia</url-pattern>
+    </servlet-mapping>
+
+    <!-- Reportes -->
+    <servlet>
+        <servlet-name>ReporteServlet</servlet-name>
+        <servlet-class>controllers.ReporteServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>ReporteServlet</servlet-name>
+        <url-pattern>/reportes</url-pattern>
+    </servlet-mapping>
+
+    <!-- ============ RECURSOS ESTÁTICOS ============ -->
+    <servlet-mapping>
+        <servlet-name>default</servlet-name>
+        <url-pattern>/css/*</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>default</servlet-name>
+        <url-pattern>/js/*</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>default</servlet-name>
+        <url-pattern>/images/*</url-pattern>
+    </servlet-mapping>
+
+<!-- Consulta DNI Proxy -->
+<servlet>
+    <servlet-name>ConsultaDNIServlet</servlet-name>
+    <servlet-class>controllers.ConsultaDNIServlet</servlet-class>
+</servlet>
+<servlet-mapping>
+    <servlet-name>ConsultaDNIServlet</servlet-name>
+    <url-pattern>/consulta-dni</url-pattern>
+</servlet-mapping>
+
+    <!-- Login -->
+    <servlet>
+        <servlet-name>LoginServlet</servlet-name>
+        <servlet-class>controllers.LoginServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>LoginServlet</servlet-name>
+        <url-pattern>/LoginServlet</url-pattern>
+    </servlet-mapping>
+</web-app>
