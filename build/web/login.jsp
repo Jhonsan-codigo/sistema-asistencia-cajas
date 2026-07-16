@@ -535,9 +535,6 @@
                 
             </form>
             
-            <div class="demo-credentials">
-                <p><strong>Usuario:</strong> admin | <strong>Contraseña:</strong> admin123</p>
-            </div>
             
             <div class="form-footer">
                 <p>Sistema de Asistencia y Control Académico</p>
