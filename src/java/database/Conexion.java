@@ -24,22 +24,58 @@ public class Conexion {
         return conn;
     }
     
-    private static Connection getPostgresConnection(String databaseUrl) {
-        Connection conn = null;
-        try {
-            // Convertir postgresql:// a jdbc:postgresql://
-            String jdbcUrl = databaseUrl.replace("postgresql://", "jdbc:postgresql://");
-            
-            Class.forName("org.postgresql.Driver");
-            conn = DriverManager.getConnection(jdbcUrl);
-            System.out.println("Conectado a PostgreSQL en Railway");
-        } catch (ClassNotFoundException e) {
-            System.out.println("Error: Driver PostgreSQL no encontrado - " + e.getMessage());
-        } catch (SQLException e) {
-            System.out.println("Error de conexión PostgreSQL: " + e.getMessage());
+   private static Connection getPostgresConnection(String databaseUrl) {
+    Connection conn = null;
+    try {
+        // Parsear la URL de Neon/Railway: postgresql://user:pass@host:port/db?params
+        // Convertir a formato JDBC válido
+        URI uri = new URI(databaseUrl);
+        
+        String host = uri.getHost();
+        int port = uri.getPort();
+        if (port == -1) port = 5432; // Puerto por defecto PostgreSQL
+        
+        String path = uri.getPath();
+        if (path.startsWith("/")) path = path.substring(1); // Quitar / inicial
+        
+        // Obtener user y password de la autoridad
+        String userInfo = uri.getUserInfo();
+        String user = "";
+        String password = "";
+        if (userInfo != null) {
+            String[] parts = userInfo.split(":");
+            user = parts[0];
+            if (parts.length > 1) password = parts[1];
         }
-        return conn;
+        
+        // Construir URL JDBC válida
+        String jdbcUrl = "jdbc:postgresql://" + host + ":" + port + "/" + path;
+        
+        // Agregar parámetros de query si existen
+        String query = uri.getQuery();
+        if (query != null && !query.isEmpty()) {
+            jdbcUrl += "?" + query;
+        }
+        
+        Class.forName("org.postgresql.Driver");
+        
+        // Conectar con user y password separados
+        conn = DriverManager.getConnection(jdbcUrl, user, password);
+        
+        System.out.println("Conectado a PostgreSQL en la nube");
+        
+    } catch (ClassNotFoundException e) {
+        System.out.println("Error: Driver PostgreSQL no encontrado");
+        e.printStackTrace();
+    } catch (SQLException e) {
+        System.out.println("Error de conexión PostgreSQL: " + e.getMessage());
+        e.printStackTrace();
+    } catch (Exception e) {
+        System.out.println("Error parseando DATABASE_URL: " + e.getMessage());
+        e.printStackTrace();
     }
+    return conn;
+}
     
     private static Connection getLocalConnection() {
         Connection conn = null;
