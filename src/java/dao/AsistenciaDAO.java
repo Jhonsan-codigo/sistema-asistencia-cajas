@@ -7,10 +7,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class AsistenciaDAO {
-    
+
     public List<Asistencia> listarPorCursoYFecha(int cursoId, Date fecha) {
         List<Asistencia> lista = new ArrayList<>();
-        String sql = "SELECT a.*, al.apellidos + ', ' + al.nombres as nombre_alumno, c.nombre as nombre_curso, d.apellidos + ', ' + d.nombres as nombre_docente " +
+        String sql = "SELECT a.*, CONCAT(al.apellidos, ', ', al.nombres) as nombre_alumno, " +
+                     "c.nombre as nombre_curso, CONCAT(d.apellidos, ', ', d.nombres) as nombre_docente " +
                      "FROM asistencias a " +
                      "JOIN alumnos al ON a.alumno_id = al.id " +
                      "JOIN cursos c ON a.curso_id = c.id " +
@@ -37,13 +38,15 @@ public class AsistenciaDAO {
             }
         } catch (SQLException e) {
             System.out.println("Error al listar asistencias: " + e.getMessage());
+            e.printStackTrace();
         }
         return lista;
     }
-    
+
     public List<Asistencia> listarPorAlumno(int alumnoId) {
         List<Asistencia> lista = new ArrayList<>();
-        String sql = "SELECT a.*, c.nombre as nombre_curso, d.apellidos + ', ' + d.nombres as nombre_docente " +
+        String sql = "SELECT a.*, c.nombre as nombre_curso, " +
+                     "CONCAT(d.apellidos, ', ', d.nombres) as nombre_docente " +
                      "FROM asistencias a " +
                      "JOIN cursos c ON a.curso_id = c.id " +
                      "JOIN docentes d ON a.docente_id = d.id " +
@@ -67,10 +70,11 @@ public class AsistenciaDAO {
             }
         } catch (SQLException e) {
             System.out.println("Error al listar asistencias por alumno: " + e.getMessage());
+            e.printStackTrace();
         }
         return lista;
     }
-    
+
     public boolean existeAsistencia(int alumnoId, int cursoId, Date fecha) {
         String sql = "SELECT COUNT(*) FROM asistencias WHERE alumno_id = ? AND curso_id = ? AND fecha = ?";
         try (Connection conn = Conexion.getConnection();
@@ -84,10 +88,11 @@ public class AsistenciaDAO {
             }
         } catch (SQLException e) {
             System.out.println("Error al verificar asistencia: " + e.getMessage());
+            e.printStackTrace();
         }
         return false;
     }
-    
+
     public boolean registrar(Asistencia a) {
         String sql = "INSERT INTO asistencias (alumno_id, curso_id, docente_id, fecha, estado, observacion) VALUES (?, ?, ?, ?, ?, ?)";
         try (Connection conn = Conexion.getConnection();
@@ -98,9 +103,48 @@ public class AsistenciaDAO {
             pstmt.setDate(4, a.getFecha());
             pstmt.setString(5, a.getEstado());
             pstmt.setString(6, a.getObservacion());
-            return pstmt.executeUpdate() > 0;
+            boolean resultado = pstmt.executeUpdate() > 0;
+            if (resultado) {
+                System.out.println("Asistencia registrada: alumno=" + a.getAlumnoId() + ", curso=" + a.getCursoId() + ", fecha=" + a.getFecha());
+            }
+            return resultado;
         } catch (SQLException e) {
             System.out.println("Error al registrar asistencia: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    public boolean actualizar(int alumnoId, int cursoId, Date fecha, String estado, String observacion) {
+        String sql = "UPDATE asistencias SET estado = ?, observacion = ? WHERE alumno_id = ? AND curso_id = ? AND fecha = ?";
+        try (Connection conn = Conexion.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, estado);
+            pstmt.setString(2, observacion);
+            pstmt.setInt(3, alumnoId);
+            pstmt.setInt(4, cursoId);
+            pstmt.setDate(5, fecha);
+            boolean resultado = pstmt.executeUpdate() > 0;
+            if (resultado) {
+                System.out.println("Asistencia actualizada: alumno=" + alumnoId + ", curso=" + cursoId + ", fecha=" + fecha);
+            }
+            return resultado;
+        } catch (SQLException e) {
+            System.out.println("Error al actualizar asistencia: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    public boolean eliminar(int id) {
+        String sql = "DELETE FROM asistencias WHERE id = ?";
+        try (Connection conn = Conexion.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, id);
+            return pstmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            System.out.println("Error al eliminar asistencia: " + e.getMessage());
+            e.printStackTrace();
         }
         return false;
     }
