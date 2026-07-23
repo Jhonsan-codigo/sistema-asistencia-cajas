@@ -54,22 +54,18 @@ public class ReporteServlet extends HttpServlet {
         request.setAttribute("listaAlumnos", todosAlumnos);
 
         if ("asistencia".equals(action)) {
-            // ============================================
-            // REPORTE POR ASISTENCIA - CON PERÍODOS
-            // ============================================
             String periodo = request.getParameter("periodo");
             String fechaInicio = request.getParameter("fecha_inicio");
             String fechaFin = request.getParameter("fecha_fin");
             String carreraId = request.getParameter("carrera_id");
             String ciclo = request.getParameter("ciclo");
 
-            // ✅ CORRECCIÓN: Usar zona horaria de Lima (Perú)
             LocalDate hoy = LocalDate.now(ZoneId.of("America/Lima"));
             LocalDate inicio = null;
             LocalDate fin = hoy;
 
             if (periodo == null || periodo.isEmpty() || "todo".equals(periodo)) {
-                inicio = hoy.minusYears(10); // Todo el tiempo (últimos 10 años)
+                inicio = hoy.minusYears(10);
                 fin = hoy;
             } else if ("hoy".equals(periodo)) {
                 inicio = hoy;
@@ -89,7 +85,6 @@ public class ReporteServlet extends HttpServlet {
                 }
             }
 
-            // Si no hay período explícito, usar fechas del request
             if (fechaInicio != null && !fechaInicio.isEmpty() && inicio == null) {
                 inicio = LocalDate.parse(fechaInicio);
             }
@@ -125,12 +120,11 @@ public class ReporteServlet extends HttpServlet {
                     Date fFin = Date.valueOf(fin);
 
                     for (Alumno alumno : alumnos) {
-                        List<Asistencia> asistencias = asistenciaDAO.listarPorAlumno(alumno.getId());
-
-                        // Filtrar por fecha
-                        asistencias.removeIf(a -> a.getFecha().before(fInicio) || a.getFecha().after(fFin));
+                        List<Asistencia> asistencias = asistenciaDAO.listarPorAlumnoYRango(alumno.getId(), fInicio, fFin);
 
                         int presentes = 0, tardanzas = 0, ausentes = 0;
+                        int contadas = asistencias.size();
+
                         for (Asistencia a : asistencias) {
                             String estado = a.getEstado();
                             if ("P".equals(estado)) presentes++;
@@ -142,7 +136,7 @@ public class ReporteServlet extends HttpServlet {
                         conteo.put("P", presentes);
                         conteo.put("T", tardanzas);
                         conteo.put("A", ausentes);
-                        conteo.put("total", asistencias.size());
+                        conteo.put("total", contadas);
                         conteoAsistencias.put(alumno.getId(), conteo);
 
                         totalPresentes += presentes;
@@ -155,14 +149,11 @@ public class ReporteServlet extends HttpServlet {
                     request.setAttribute("totalTardanzas", totalTardanzas);
                     request.setAttribute("totalAusentes", totalAusentes);
                 } catch (NumberFormatException e) {
-                    System.out.println("Error al parsear carrera_id o ciclo: " + e.getMessage());
+                    e.printStackTrace();
                 }
             }
 
         } else if ("alumno".equals(action)) {
-            // ============================================
-            // REPORTE POR ALUMNO
-            // ============================================
             String alumnoId = request.getParameter("alumno_id");
 
             if (alumnoId != null && !alumnoId.isEmpty()) {

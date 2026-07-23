@@ -1,12 +1,37 @@
 package dao;
 
-import database.Conexion;          // ✅ CORREGIDO: era config.Conexion
+import database.Conexion;
 import modelos.Asistencia;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
 public class AsistenciaDAO {
+
+    private boolean esPostgreSQL = false;
+
+    public AsistenciaDAO() {
+        try (Connection conn = Conexion.getConnection()) {
+            DatabaseMetaData metaData = conn.getMetaData();
+            String dbName = metaData.getDatabaseProductName();
+            esPostgreSQL = dbName.toLowerCase().contains("postgresql");
+            System.out.println("BD detectada: " + dbName + " | esPostgreSQL=" + esPostgreSQL);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private String fechaWhere(String campo) {
+        return esPostgreSQL ? campo + "::text = ?::text" : "DATE(" + campo + ") = ?";
+    }
+
+    private void setFechaParam(PreparedStatement pstmt, int index, Date fecha) throws SQLException {
+        if (esPostgreSQL) {
+            pstmt.setString(index, fecha.toString());
+        } else {
+            pstmt.setDate(index, fecha);
+        }
+    }
 
     // ==================== REGISTRAR ====================
     public boolean registrar(Asistencia a) {
@@ -19,13 +44,8 @@ public class AsistenciaDAO {
             pstmt.setDate(4, a.getFecha());
             pstmt.setString(5, a.getEstado());
             pstmt.setString(6, a.getObservacion());
-            boolean resultado = pstmt.executeUpdate() > 0;
-            if (resultado) {
-                System.out.println("Asistencia registrada: alumno=" + a.getAlumnoId() + ", curso=" + a.getCursoId() + ", fecha=" + a.getFecha());
-            }
-            return resultado;
+            return pstmt.executeUpdate() > 0;
         } catch (SQLException e) {
-            System.out.println("Error al registrar asistencia: " + e.getMessage());
             e.printStackTrace();
         }
         return false;
@@ -34,20 +54,14 @@ public class AsistenciaDAO {
     // ==================== LISTAR TODAS ====================
     public List<Asistencia> listarTodas() {
         List<Asistencia> lista = new ArrayList<>();
-        String sql = "SELECT a.*, al.nombre as nombre_alumno, c.nombre as nombre_curso, d.nombre as nombre_docente " +
-                     "FROM asistencias a " +
-                     "JOIN alumnos al ON a.alumno_id = al.id " +
-                     "JOIN cursos c ON a.curso_id = c.id " +
-                     "JOIN docentes d ON a.docente_id = d.id " +
-                     "ORDER BY a.fecha DESC, a.id DESC";
+        String sql = "SELECT * FROM asistencias ORDER BY fecha DESC, id DESC";
         try (Connection conn = Conexion.getConnection();
              Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
             while (rs.next()) {
-                lista.add(mapearAsistencia(rs));
+                lista.add(mapearBasico(rs));
             }
         } catch (SQLException e) {
-            System.out.println("Error al listar asistencias: " + e.getMessage());
             e.printStackTrace();
         }
         return lista;
@@ -56,23 +70,16 @@ public class AsistenciaDAO {
     // ==================== LISTAR POR CURSO Y FECHA ====================
     public List<Asistencia> listarPorCursoYFecha(int cursoId, Date fecha) {
         List<Asistencia> lista = new ArrayList<>();
-        String sql = "SELECT a.*, al.nombre as nombre_alumno, c.nombre as nombre_curso, d.nombre as nombre_docente " +
-                     "FROM asistencias a " +
-                     "JOIN alumnos al ON a.alumno_id = al.id " +
-                     "JOIN cursos c ON a.curso_id = c.id " +
-                     "JOIN docentes d ON a.docente_id = d.id " +
-                     "WHERE a.curso_id = ? AND a.fecha::text = ?::text " +
-                     "ORDER BY al.nombre";
+        String sql = "SELECT * FROM asistencias WHERE curso_id = ? AND " + fechaWhere("fecha") + " ORDER BY alumno_id";
         try (Connection conn = Conexion.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setInt(1, cursoId);
-            pstmt.setString(2, fecha.toString());
+            setFechaParam(pstmt, 2, fecha);
             ResultSet rs = pstmt.executeQuery();
             while (rs.next()) {
-                lista.add(mapearAsistencia(rs));
+                lista.add(mapearBasico(rs));
             }
         } catch (SQLException e) {
-            System.out.println("Error al listar asistencias por curso y fecha: " + e.getMessage());
             e.printStackTrace();
         }
         return lista;
@@ -81,21 +88,34 @@ public class AsistenciaDAO {
     // ==================== LISTAR POR ALUMNO ====================
     public List<Asistencia> listarPorAlumno(int alumnoId) {
         List<Asistencia> lista = new ArrayList<>();
-        String sql = "SELECT a.*, al.nombre as nombre_alumno, c.nombre as nombre_curso, d.nombre as nombre_docente " +
-                     "FROM asistencias a " +
-                     "JOIN alumnos al ON a.alumno_id = al.id " +
-                     "JOIN cursos c ON a.curso_id = c.id " +
-                     "JOIN docentes d ON a.docente_id = d.id " +
-                     "WHERE a.alumno_id = ? ORDER BY a.fecha DESC";
+        String sql = "SELECT * FROM asistencias WHERE alumno_id = ? ORDER BY fecha DESC";
         try (Connection conn = Conexion.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setInt(1, alumnoId);
             ResultSet rs = pstmt.executeQuery();
             while (rs.next()) {
-                lista.add(mapearAsistencia(rs));
+                lista.add(mapearBasico(rs));
             }
         } catch (SQLException e) {
-            System.out.println("Error al listar asistencias por alumno: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return lista;
+    }
+
+    // ==================== LISTAR POR ALUMNO Y RANGO ====================
+    public List<Asistencia> listarPorAlumnoYRango(int alumnoId, Date fechaInicio, Date fechaFin) {
+        List<Asistencia> lista = new ArrayList<>();
+        String sql = "SELECT * FROM asistencias WHERE alumno_id = ? AND DATE(fecha) BETWEEN ? AND ? ORDER BY fecha DESC";
+        try (Connection conn = Conexion.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, alumnoId);
+            pstmt.setDate(2, fechaInicio);
+            pstmt.setDate(3, fechaFin);
+            ResultSet rs = pstmt.executeQuery();
+            while (rs.next()) {
+                lista.add(mapearBasico(rs));
+            }
+        } catch (SQLException e) {
             e.printStackTrace();
         }
         return lista;
@@ -104,45 +124,33 @@ public class AsistenciaDAO {
     // ==================== LISTAR POR FECHA ====================
     public List<Asistencia> listarPorFecha(Date fecha) {
         List<Asistencia> lista = new ArrayList<>();
-        String sql = "SELECT a.*, al.nombre as nombre_alumno, c.nombre as nombre_curso, d.nombre as nombre_docente " +
-                     "FROM asistencias a " +
-                     "JOIN alumnos al ON a.alumno_id = al.id " +
-                     "JOIN cursos c ON a.curso_id = c.id " +
-                     "JOIN docentes d ON a.docente_id = d.id " +
-                     "WHERE a.fecha::text = ?::text ORDER BY al.nombre";
+        String sql = "SELECT * FROM asistencias WHERE " + fechaWhere("fecha") + " ORDER BY alumno_id";
         try (Connection conn = Conexion.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setString(1, fecha.toString());
+            setFechaParam(pstmt, 1, fecha);
             ResultSet rs = pstmt.executeQuery();
             while (rs.next()) {
-                lista.add(mapearAsistencia(rs));
+                lista.add(mapearBasico(rs));
             }
         } catch (SQLException e) {
-            System.out.println("Error al listar asistencias por fecha: " + e.getMessage());
             e.printStackTrace();
         }
         return lista;
     }
 
-    // ==================== LISTAR POR RANGO DE FECHAS ====================
+    // ==================== LISTAR POR RANGO ====================
     public List<Asistencia> listarPorRangoFechas(Date fechaInicio, Date fechaFin) {
         List<Asistencia> lista = new ArrayList<>();
-        String sql = "SELECT a.*, al.nombre as nombre_alumno, c.nombre as nombre_curso, d.nombre as nombre_docente " +
-                     "FROM asistencias a " +
-                     "JOIN alumnos al ON a.alumno_id = al.id " +
-                     "JOIN cursos c ON a.curso_id = c.id " +
-                     "JOIN docentes d ON a.docente_id = d.id " +
-                     "WHERE a.fecha BETWEEN ? AND ? ORDER BY a.fecha DESC, al.nombre";
+        String sql = "SELECT * FROM asistencias WHERE DATE(fecha) BETWEEN ? AND ? ORDER BY fecha DESC";
         try (Connection conn = Conexion.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setDate(1, fechaInicio);
             pstmt.setDate(2, fechaFin);
             ResultSet rs = pstmt.executeQuery();
             while (rs.next()) {
-                lista.add(mapearAsistencia(rs));
+                lista.add(mapearBasico(rs));
             }
         } catch (SQLException e) {
-            System.out.println("Error al listar asistencias por rango: " + e.getMessage());
             e.printStackTrace();
         }
         return lista;
@@ -150,21 +158,15 @@ public class AsistenciaDAO {
 
     // ==================== OBTENER POR ID ====================
     public Asistencia obtenerPorId(int id) {
-        String sql = "SELECT a.*, al.nombre as nombre_alumno, c.nombre as nombre_curso, d.nombre as nombre_docente " +
-                     "FROM asistencias a " +
-                     "JOIN alumnos al ON a.alumno_id = al.id " +
-                     "JOIN cursos c ON a.curso_id = c.id " +
-                     "JOIN docentes d ON a.docente_id = d.id " +
-                     "WHERE a.id = ?";
+        String sql = "SELECT * FROM asistencias WHERE id = ?";
         try (Connection conn = Conexion.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setInt(1, id);
             ResultSet rs = pstmt.executeQuery();
             if (rs.next()) {
-                return mapearAsistencia(rs);
+                return mapearBasico(rs);
             }
         } catch (SQLException e) {
-            System.out.println("Error al obtener asistencia: " + e.getMessage());
             e.printStackTrace();
         }
         return null;
@@ -172,12 +174,12 @@ public class AsistenciaDAO {
 
     // ==================== EXISTE ASISTENCIA ====================
     public boolean existeAsistencia(int alumnoId, int cursoId, Date fecha) {
-        String sql = "SELECT COUNT(*) FROM asistencias WHERE alumno_id = ? AND curso_id = ? AND fecha::text = ?::text";
+        String sql = "SELECT COUNT(*) FROM asistencias WHERE alumno_id = ? AND curso_id = ? AND " + fechaWhere("fecha");
         try (Connection conn = Conexion.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setInt(1, alumnoId);
             pstmt.setInt(2, cursoId);
-            pstmt.setString(3, fecha.toString());
+            setFechaParam(pstmt, 3, fecha);
             ResultSet rs = pstmt.executeQuery();
             if (rs.next()) {
                 int count = rs.getInt(1);
@@ -185,7 +187,7 @@ public class AsistenciaDAO {
                 return count > 0;
             }
         } catch (SQLException e) {
-            System.out.println("Error al verificar asistencia: " + e.getMessage());
+            System.out.println("ERROR en existeAsistencia: " + e.getMessage());
             e.printStackTrace();
         }
         return false;
@@ -193,23 +195,19 @@ public class AsistenciaDAO {
 
     // ==================== ACTUALIZAR ====================
     public boolean actualizar(int alumnoId, int cursoId, Date fecha, String estado, String observacion) {
-        String sql = "UPDATE asistencias SET estado = ?, observacion = ? WHERE alumno_id = ? AND curso_id = ? AND fecha::text = ?::text";
+        String sql = "UPDATE asistencias SET estado = ?, observacion = ? WHERE alumno_id = ? AND curso_id = ? AND " + fechaWhere("fecha");
         try (Connection conn = Conexion.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setString(1, estado);
             pstmt.setString(2, observacion);
             pstmt.setInt(3, alumnoId);
             pstmt.setInt(4, cursoId);
-            pstmt.setString(5, fecha.toString());
-            boolean resultado = pstmt.executeUpdate() > 0;
-            if (resultado) {
-                System.out.println("Asistencia actualizada: alumno=" + alumnoId + ", curso=" + cursoId + ", fecha=" + fecha);
-            } else {
-                System.out.println("Asistencia NO actualizada (no encontrada): alumno=" + alumnoId + ", curso=" + cursoId + ", fecha=" + fecha);
-            }
-            return resultado;
+            setFechaParam(pstmt, 5, fecha);
+            boolean ok = pstmt.executeUpdate() > 0;
+            System.out.println("actualizar: alumno=" + alumnoId + ", curso=" + cursoId + ", fecha=" + fecha + " -> ok=" + ok);
+            return ok;
         } catch (SQLException e) {
-            System.out.println("Error al actualizar asistencia: " + e.getMessage());
+            System.out.println("ERROR en actualizar: " + e.getMessage());
             e.printStackTrace();
         }
         return false;
@@ -223,7 +221,6 @@ public class AsistenciaDAO {
             pstmt.setInt(1, id);
             return pstmt.executeUpdate() > 0;
         } catch (SQLException e) {
-            System.out.println("Error al eliminar asistencia: " + e.getMessage());
             e.printStackTrace();
         }
         return false;
@@ -231,17 +228,16 @@ public class AsistenciaDAO {
 
     // ==================== CONTAR POR ESTADO Y FECHA ====================
     public int contarPorEstadoYFecha(String estado, Date fecha) {
-        String sql = "SELECT COUNT(*) FROM asistencias WHERE estado = ? AND fecha::text = ?::text";
+        String sql = "SELECT COUNT(*) FROM asistencias WHERE estado = ? AND " + fechaWhere("fecha");
         try (Connection conn = Conexion.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setString(1, estado);
-            pstmt.setString(2, fecha.toString());
+            setFechaParam(pstmt, 2, fecha);
             ResultSet rs = pstmt.executeQuery();
             if (rs.next()) {
                 return rs.getInt(1);
             }
         } catch (SQLException e) {
-            System.out.println("Error al contar asistencias: " + e.getMessage());
             e.printStackTrace();
         }
         return 0;
@@ -249,25 +245,24 @@ public class AsistenciaDAO {
 
     // ==================== CONTAR POR ESTADO, CURSO Y FECHA ====================
     public int contarPorEstadoCursoYFecha(String estado, int cursoId, Date fecha) {
-        String sql = "SELECT COUNT(*) FROM asistencias WHERE estado = ? AND curso_id = ? AND fecha::text = ?::text";
+        String sql = "SELECT COUNT(*) FROM asistencias WHERE estado = ? AND curso_id = ? AND " + fechaWhere("fecha");
         try (Connection conn = Conexion.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setString(1, estado);
             pstmt.setInt(2, cursoId);
-            pstmt.setString(3, fecha.toString());
+            setFechaParam(pstmt, 3, fecha);
             ResultSet rs = pstmt.executeQuery();
             if (rs.next()) {
                 return rs.getInt(1);
             }
         } catch (SQLException e) {
-            System.out.println("Error al contar asistencias: " + e.getMessage());
             e.printStackTrace();
         }
         return 0;
     }
 
-    // ==================== MAPEAR RESULTSET ====================
-    private Asistencia mapearAsistencia(ResultSet rs) throws SQLException {
+    // ==================== MAPEAR BÁSICO ====================
+    private Asistencia mapearBasico(ResultSet rs) throws SQLException {
         Asistencia a = new Asistencia();
         a.setId(rs.getInt("id"));
         a.setAlumnoId(rs.getInt("alumno_id"));
@@ -276,9 +271,6 @@ public class AsistenciaDAO {
         a.setFecha(rs.getDate("fecha"));
         a.setEstado(rs.getString("estado"));
         a.setObservacion(rs.getString("observacion"));
-        a.setNombreAlumno(rs.getString("nombre_alumno"));
-        a.setNombreCurso(rs.getString("nombre_curso"));
-        a.setNombreDocente(rs.getString("nombre_docente"));
         return a;
     }
 }
