@@ -18,6 +18,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.sql.Date;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -62,8 +63,8 @@ public class ReporteServlet extends HttpServlet {
             String carreraId = request.getParameter("carrera_id");
             String ciclo = request.getParameter("ciclo");
 
-            // Calcular fechas según período
-            LocalDate hoy = LocalDate.now();
+            // ✅ CORRECCIÓN: Usar zona horaria de Lima (Perú)
+            LocalDate hoy = LocalDate.now(ZoneId.of("America/Lima"));
             LocalDate inicio = null;
             LocalDate fin = hoy;
 

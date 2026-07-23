@@ -17,6 +17,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.sql.Date;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.List;
 
 @WebServlet(name = "AsistenciaServlet", urlPatterns = {"/asistencia"})
@@ -40,7 +42,8 @@ public class AsistenciaServlet extends HttpServlet {
         request.setAttribute("cursos", cursos);
         request.setAttribute("docentes", docentes);
 
-        String hoy = new java.sql.Date(System.currentTimeMillis()).toString();
+        // ✅ CORRECCIÓN: Usar zona horaria de Lima
+        String hoy = Date.valueOf(LocalDate.now(ZoneId.of("America/Lima"))).toString();
         request.setAttribute("hoy", hoy);
 
         String fecha = request.getParameter("fecha");
@@ -169,10 +172,6 @@ public class AsistenciaServlet extends HttpServlet {
                 request.setAttribute("mensajeError", "No se seleccionaron alumnos");
             }
 
-            // =====================================================
-            // CORRECCIÓN: Usar forward en lugar de redirect 
-            // para mantener el mensaje de éxito
-            // =====================================================
             // Recargar los datos para mostrar la página actualizada
             List<Carrera> carreras = carreraDAO.listarTodas();
             List<Curso> cursos = cursoDAO.listarTodos();
@@ -181,7 +180,8 @@ public class AsistenciaServlet extends HttpServlet {
             request.setAttribute("cursos", cursos);
             request.setAttribute("docentes", docentes);
 
-            String hoy = new java.sql.Date(System.currentTimeMillis()).toString();
+            // ✅ CORRECCIÓN: Usar zona horaria de Lima
+            String hoy = Date.valueOf(LocalDate.now(ZoneId.of("America/Lima"))).toString();
             request.setAttribute("hoy", hoy);
             request.setAttribute("fechaSeleccionada", fechaStr);
             request.setAttribute("cursoSeleccionado", cursoIdStr);
